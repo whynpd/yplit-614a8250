@@ -26,7 +26,7 @@ function MemoriesPage() {
   const { data } = useQuery({
     queryKey: ["memories", tripId],
     queryFn: async () => {
-      const { data } = await supabase.from("memories").select("*, author:profiles!memories_user_id_fkey(*)").eq("trip_id", tripId).order("taken_at", { ascending: false });
+      const { data } = await supabase.from("memories").select("*, author:profiles!memories_user_profile_fkey(*)").eq("trip_id", tripId).order("taken_at", { ascending: false });
       return data ?? [];
     },
   });

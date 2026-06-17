@@ -47,7 +47,7 @@ function GuessGame() {
       const { data: exps } = await supabase.from("expenses").select("id, description, amount, currency, occurred_at").eq("trip_id", tripId).order("occurred_at", { ascending: false }).limit(20);
       const ids = (exps ?? []).map((e) => e.id);
       const { data: guesses } = ids.length
-        ? await supabase.from("bill_guesses").select("*, profile:profiles!bill_guesses_user_id_fkey(display_name)").in("expense_id", ids)
+        ? await supabase.from("bill_guesses").select("*, profile:profiles!bill_guesses_user_profile_fkey(display_name)").in("expense_id", ids)
         : { data: [] };
       return { expenses: exps ?? [], guesses: guesses ?? [] };
     },
@@ -113,10 +113,10 @@ function MissionsGame() {
   const { data } = useQuery({
     queryKey: ["missions", tripId],
     queryFn: async () => {
-      const { data: missions } = await supabase.from("missions").select("*, author:profiles!missions_created_by_fkey(display_name)").eq("trip_id", tripId);
+      const { data: missions } = await supabase.from("missions").select("*, author:profiles!missions_creator_profile_fkey(display_name)").eq("trip_id", tripId);
       const ids = (missions ?? []).map((m) => m.id);
       const { data: comps } = ids.length
-        ? await supabase.from("mission_completions").select("*, profile:profiles!mission_completions_user_id_fkey(display_name)").in("mission_id", ids)
+        ? await supabase.from("mission_completions").select("*, profile:profiles!mission_completions_user_profile_fkey(display_name)").in("mission_id", ids)
         : { data: [] };
       return { missions: missions ?? [], comps: comps ?? [] };
     },
@@ -178,7 +178,7 @@ function MarketGame() {
   const { data } = useQuery({
     queryKey: ["bets", tripId],
     queryFn: async () => {
-      const { data } = await supabase.from("market_bets").select("*, profile:profiles!market_bets_user_id_fkey(display_name)").eq("trip_id", tripId).order("created_at", { ascending: false });
+      const { data } = await supabase.from("market_bets").select("*, profile:profiles!market_bets_user_profile_fkey(display_name)").eq("trip_id", tripId).order("created_at", { ascending: false });
       return data ?? [];
     },
   });
@@ -239,7 +239,7 @@ function StepsGame() {
   const { data } = useQuery({
     queryKey: ["steps", tripId],
     queryFn: async () => {
-      const { data } = await supabase.from("step_entries").select("*, profile:profiles!step_entries_user_id_fkey(display_name)").eq("trip_id", tripId).order("day", { ascending: false });
+      const { data } = await supabase.from("step_entries").select("*, profile:profiles!step_entries_user_profile_fkey(display_name)").eq("trip_id", tripId).order("day", { ascending: false });
       return data ?? [];
     },
   });

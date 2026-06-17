@@ -26,8 +26,8 @@ function ExpensesPage() {
     queryKey: ["expenses", tripId],
     queryFn: async () => {
       const [exps, members] = await Promise.all([
-        supabase.from("expenses").select("*, splits:expense_splits(*), payer:profiles!expenses_payer_id_fkey(*)").eq("trip_id", tripId).order("occurred_at", { ascending: false }),
-        supabase.from("trip_members").select("user_id, profile:profiles(*)").eq("trip_id", tripId),
+        supabase.from("expenses").select("*, splits:expense_splits(*), payer:profiles!expenses_payer_profile_fkey(*)").eq("trip_id", tripId).order("occurred_at", { ascending: false }),
+        supabase.from("trip_members").select("user_id, profile:profiles!trip_members_profile_fkey(*)").eq("trip_id", tripId),
       ]);
       return { expenses: exps.data ?? [], members: members.data ?? [] };
     },

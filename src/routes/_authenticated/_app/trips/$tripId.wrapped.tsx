@@ -15,7 +15,7 @@ function WrappedPage() {
       const [trip, exps, members, memories] = await Promise.all([
         supabase.from("trips").select("*").eq("id", tripId).maybeSingle(),
         supabase.from("expenses").select("*").eq("trip_id", tripId),
-        supabase.from("trip_members").select("user_id, profile:profiles(*)").eq("trip_id", tripId),
+        supabase.from("trip_members").select("user_id, profile:profiles!trip_members_profile_fkey(*)").eq("trip_id", tripId),
         supabase.from("memories").select("id").eq("trip_id", tripId),
       ]);
       return { trip: trip.data, expenses: exps.data ?? [], members: members.data ?? [], memoriesCount: memories.data?.length ?? 0 };

@@ -26,7 +26,7 @@ function BalancesPage() {
     queryKey: ["balances", tripId],
     queryFn: async () => {
       const [members, exps, splits, sets, trip] = await Promise.all([
-        supabase.from("trip_members").select("user_id, profile:profiles(*)").eq("trip_id", tripId),
+        supabase.from("trip_members").select("user_id, profile:profiles!trip_members_profile_fkey(*)").eq("trip_id", tripId),
         supabase.from("expenses").select("id, payer_id, amount").eq("trip_id", tripId),
         supabase.from("expense_splits").select("expense_id, user_id, amount").in("expense_id",
           (await supabase.from("expenses").select("id").eq("trip_id", tripId)).data?.map((x) => x.id) ?? ["00000000-0000-0000-0000-000000000000"]),

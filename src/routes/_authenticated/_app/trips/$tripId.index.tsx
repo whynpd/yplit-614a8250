@@ -15,7 +15,7 @@ function Overview() {
     queryKey: ["trip-overview", tripId],
     queryFn: async () => {
       const [members, expenses, trip] = await Promise.all([
-        supabase.from("trip_members").select("user_id, role, profile:profiles(*)").eq("trip_id", tripId),
+        supabase.from("trip_members").select("user_id, role, profile:profiles!trip_members_profile_fkey(*)").eq("trip_id", tripId),
         supabase.from("expenses").select("*").eq("trip_id", tripId).order("occurred_at", { ascending: false }).limit(5),
         supabase.from("trips").select("base_currency").eq("id", tripId).maybeSingle(),
       ]);
