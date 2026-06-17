@@ -49,18 +49,19 @@ function TripLayout() {
         </div>
         <nav className="flex overflow-x-auto border-t border-border">
           {tabs.map((t) => (
-            <Link key={t.label} to={t.to} params={{ tripId }} activeOptions={{ exact: t.exact ?? false }}
-              className="group whitespace-nowrap"
-              activeProps={{ className: "border-primary text-primary" }}
-              inactiveProps={{ className: "border-transparent text-muted-foreground" }}>
-              {({ isActive }) => (
-                <span className={cn("inline-flex items-center gap-1 border-b-2 px-4 py-3 text-sm transition", isActive ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground")}>
-                  <t.icon className="size-4" />{t.label}
-                </span>
-              )}
+            <Link
+              key={t.label}
+              to={t.to}
+              params={{ tripId }}
+              activeOptions={{ exact: t.exact ?? false }}
+              className={cn("inline-flex items-center gap-1 border-b-2 border-transparent px-4 py-3 text-sm text-muted-foreground transition hover:text-foreground")}
+              activeProps={{ className: "inline-flex items-center gap-1 border-b-2 border-primary px-4 py-3 text-sm text-primary" }}
+            >
+              <t.icon className="size-4" />{t.label}
             </Link>
           ))}
         </nav>
+
       </div>
       <div className="mt-6"><Outlet /></div>
     </div>
