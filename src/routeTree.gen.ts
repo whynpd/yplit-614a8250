@@ -9,38 +9,236 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
+import { Route as AuthenticatedAppProfileRouteImport } from './routes/_authenticated/_app/profile'
+import { Route as AuthenticatedAppAdminRouteImport } from './routes/_authenticated/_app/admin'
+import { Route as AuthenticatedAppTripsIndexRouteImport } from './routes/_authenticated/_app/trips/index'
+import { Route as AuthenticatedAppTripsNewRouteImport } from './routes/_authenticated/_app/trips/new'
+import { Route as AuthenticatedAppTripsJoinRouteImport } from './routes/_authenticated/_app/trips/join'
+import { Route as AuthenticatedAppTripsTripIdRouteImport } from './routes/_authenticated/_app/trips/$tripId'
+import { Route as AuthenticatedAppTripsTripIdIndexRouteImport } from './routes/_authenticated/_app/trips/$tripId.index'
+import { Route as AuthenticatedAppTripsTripIdWrappedRouteImport } from './routes/_authenticated/_app/trips/$tripId.wrapped'
+import { Route as AuthenticatedAppTripsTripIdMemoriesRouteImport } from './routes/_authenticated/_app/trips/$tripId.memories'
+import { Route as AuthenticatedAppTripsTripIdGamesRouteImport } from './routes/_authenticated/_app/trips/$tripId.games'
+import { Route as AuthenticatedAppTripsTripIdExpensesRouteImport } from './routes/_authenticated/_app/trips/$tripId.expenses'
+import { Route as AuthenticatedAppTripsTripIdBalancesRouteImport } from './routes/_authenticated/_app/trips/$tripId.balances'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAppProfileRoute = AuthenticatedAppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppAdminRoute = AuthenticatedAppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppTripsIndexRoute =
+  AuthenticatedAppTripsIndexRouteImport.update({
+    id: '/trips/',
+    path: '/trips/',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppTripsNewRoute =
+  AuthenticatedAppTripsNewRouteImport.update({
+    id: '/trips/new',
+    path: '/trips/new',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppTripsJoinRoute =
+  AuthenticatedAppTripsJoinRouteImport.update({
+    id: '/trips/join',
+    path: '/trips/join',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppTripsTripIdRoute =
+  AuthenticatedAppTripsTripIdRouteImport.update({
+    id: '/trips/$tripId',
+    path: '/trips/$tripId',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppTripsTripIdIndexRoute =
+  AuthenticatedAppTripsTripIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAppTripsTripIdRoute,
+  } as any)
+const AuthenticatedAppTripsTripIdWrappedRoute =
+  AuthenticatedAppTripsTripIdWrappedRouteImport.update({
+    id: '/wrapped',
+    path: '/wrapped',
+    getParentRoute: () => AuthenticatedAppTripsTripIdRoute,
+  } as any)
+const AuthenticatedAppTripsTripIdMemoriesRoute =
+  AuthenticatedAppTripsTripIdMemoriesRouteImport.update({
+    id: '/memories',
+    path: '/memories',
+    getParentRoute: () => AuthenticatedAppTripsTripIdRoute,
+  } as any)
+const AuthenticatedAppTripsTripIdGamesRoute =
+  AuthenticatedAppTripsTripIdGamesRouteImport.update({
+    id: '/games',
+    path: '/games',
+    getParentRoute: () => AuthenticatedAppTripsTripIdRoute,
+  } as any)
+const AuthenticatedAppTripsTripIdExpensesRoute =
+  AuthenticatedAppTripsTripIdExpensesRouteImport.update({
+    id: '/expenses',
+    path: '/expenses',
+    getParentRoute: () => AuthenticatedAppTripsTripIdRoute,
+  } as any)
+const AuthenticatedAppTripsTripIdBalancesRoute =
+  AuthenticatedAppTripsTripIdBalancesRouteImport.update({
+    id: '/balances',
+    path: '/balances',
+    getParentRoute: () => AuthenticatedAppTripsTripIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAppAdminRoute
+  '/profile': typeof AuthenticatedAppProfileRoute
+  '/trips/$tripId': typeof AuthenticatedAppTripsTripIdRouteWithChildren
+  '/trips/join': typeof AuthenticatedAppTripsJoinRoute
+  '/trips/new': typeof AuthenticatedAppTripsNewRoute
+  '/trips/': typeof AuthenticatedAppTripsIndexRoute
+  '/trips/$tripId/balances': typeof AuthenticatedAppTripsTripIdBalancesRoute
+  '/trips/$tripId/expenses': typeof AuthenticatedAppTripsTripIdExpensesRoute
+  '/trips/$tripId/games': typeof AuthenticatedAppTripsTripIdGamesRoute
+  '/trips/$tripId/memories': typeof AuthenticatedAppTripsTripIdMemoriesRoute
+  '/trips/$tripId/wrapped': typeof AuthenticatedAppTripsTripIdWrappedRoute
+  '/trips/$tripId/': typeof AuthenticatedAppTripsTripIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAppAdminRoute
+  '/profile': typeof AuthenticatedAppProfileRoute
+  '/trips/join': typeof AuthenticatedAppTripsJoinRoute
+  '/trips/new': typeof AuthenticatedAppTripsNewRoute
+  '/trips': typeof AuthenticatedAppTripsIndexRoute
+  '/trips/$tripId/balances': typeof AuthenticatedAppTripsTripIdBalancesRoute
+  '/trips/$tripId/expenses': typeof AuthenticatedAppTripsTripIdExpensesRoute
+  '/trips/$tripId/games': typeof AuthenticatedAppTripsTripIdGamesRoute
+  '/trips/$tripId/memories': typeof AuthenticatedAppTripsTripIdMemoriesRoute
+  '/trips/$tripId/wrapped': typeof AuthenticatedAppTripsTripIdWrappedRoute
+  '/trips/$tripId': typeof AuthenticatedAppTripsTripIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
+  '/_authenticated/_app/admin': typeof AuthenticatedAppAdminRoute
+  '/_authenticated/_app/profile': typeof AuthenticatedAppProfileRoute
+  '/_authenticated/_app/trips/$tripId': typeof AuthenticatedAppTripsTripIdRouteWithChildren
+  '/_authenticated/_app/trips/join': typeof AuthenticatedAppTripsJoinRoute
+  '/_authenticated/_app/trips/new': typeof AuthenticatedAppTripsNewRoute
+  '/_authenticated/_app/trips/': typeof AuthenticatedAppTripsIndexRoute
+  '/_authenticated/_app/trips/$tripId/balances': typeof AuthenticatedAppTripsTripIdBalancesRoute
+  '/_authenticated/_app/trips/$tripId/expenses': typeof AuthenticatedAppTripsTripIdExpensesRoute
+  '/_authenticated/_app/trips/$tripId/games': typeof AuthenticatedAppTripsTripIdGamesRoute
+  '/_authenticated/_app/trips/$tripId/memories': typeof AuthenticatedAppTripsTripIdMemoriesRoute
+  '/_authenticated/_app/trips/$tripId/wrapped': typeof AuthenticatedAppTripsTripIdWrappedRoute
+  '/_authenticated/_app/trips/$tripId/': typeof AuthenticatedAppTripsTripIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/profile'
+    | '/trips/$tripId'
+    | '/trips/join'
+    | '/trips/new'
+    | '/trips/'
+    | '/trips/$tripId/balances'
+    | '/trips/$tripId/expenses'
+    | '/trips/$tripId/games'
+    | '/trips/$tripId/memories'
+    | '/trips/$tripId/wrapped'
+    | '/trips/$tripId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/profile'
+    | '/trips/join'
+    | '/trips/new'
+    | '/trips'
+    | '/trips/$tripId/balances'
+    | '/trips/$tripId/expenses'
+    | '/trips/$tripId/games'
+    | '/trips/$tripId/memories'
+    | '/trips/$tripId/wrapped'
+    | '/trips/$tripId'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/_app'
+    | '/_authenticated/_app/admin'
+    | '/_authenticated/_app/profile'
+    | '/_authenticated/_app/trips/$tripId'
+    | '/_authenticated/_app/trips/join'
+    | '/_authenticated/_app/trips/new'
+    | '/_authenticated/_app/trips/'
+    | '/_authenticated/_app/trips/$tripId/balances'
+    | '/_authenticated/_app/trips/$tripId/expenses'
+    | '/_authenticated/_app/trips/$tripId/games'
+    | '/_authenticated/_app/trips/$tripId/memories'
+    | '/_authenticated/_app/trips/$tripId/wrapped'
+    | '/_authenticated/_app/trips/$tripId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +246,168 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/_app': {
+      id: '/_authenticated/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_app/profile': {
+      id: '/_authenticated/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedAppProfileRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/admin': {
+      id: '/_authenticated/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAppAdminRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/trips/': {
+      id: '/_authenticated/_app/trips/'
+      path: '/trips'
+      fullPath: '/trips/'
+      preLoaderRoute: typeof AuthenticatedAppTripsIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/trips/new': {
+      id: '/_authenticated/_app/trips/new'
+      path: '/trips/new'
+      fullPath: '/trips/new'
+      preLoaderRoute: typeof AuthenticatedAppTripsNewRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/trips/join': {
+      id: '/_authenticated/_app/trips/join'
+      path: '/trips/join'
+      fullPath: '/trips/join'
+      preLoaderRoute: typeof AuthenticatedAppTripsJoinRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/trips/$tripId': {
+      id: '/_authenticated/_app/trips/$tripId'
+      path: '/trips/$tripId'
+      fullPath: '/trips/$tripId'
+      preLoaderRoute: typeof AuthenticatedAppTripsTripIdRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/trips/$tripId/': {
+      id: '/_authenticated/_app/trips/$tripId/'
+      path: '/'
+      fullPath: '/trips/$tripId/'
+      preLoaderRoute: typeof AuthenticatedAppTripsTripIdIndexRouteImport
+      parentRoute: typeof AuthenticatedAppTripsTripIdRoute
+    }
+    '/_authenticated/_app/trips/$tripId/wrapped': {
+      id: '/_authenticated/_app/trips/$tripId/wrapped'
+      path: '/wrapped'
+      fullPath: '/trips/$tripId/wrapped'
+      preLoaderRoute: typeof AuthenticatedAppTripsTripIdWrappedRouteImport
+      parentRoute: typeof AuthenticatedAppTripsTripIdRoute
+    }
+    '/_authenticated/_app/trips/$tripId/memories': {
+      id: '/_authenticated/_app/trips/$tripId/memories'
+      path: '/memories'
+      fullPath: '/trips/$tripId/memories'
+      preLoaderRoute: typeof AuthenticatedAppTripsTripIdMemoriesRouteImport
+      parentRoute: typeof AuthenticatedAppTripsTripIdRoute
+    }
+    '/_authenticated/_app/trips/$tripId/games': {
+      id: '/_authenticated/_app/trips/$tripId/games'
+      path: '/games'
+      fullPath: '/trips/$tripId/games'
+      preLoaderRoute: typeof AuthenticatedAppTripsTripIdGamesRouteImport
+      parentRoute: typeof AuthenticatedAppTripsTripIdRoute
+    }
+    '/_authenticated/_app/trips/$tripId/expenses': {
+      id: '/_authenticated/_app/trips/$tripId/expenses'
+      path: '/expenses'
+      fullPath: '/trips/$tripId/expenses'
+      preLoaderRoute: typeof AuthenticatedAppTripsTripIdExpensesRouteImport
+      parentRoute: typeof AuthenticatedAppTripsTripIdRoute
+    }
+    '/_authenticated/_app/trips/$tripId/balances': {
+      id: '/_authenticated/_app/trips/$tripId/balances'
+      path: '/balances'
+      fullPath: '/trips/$tripId/balances'
+      preLoaderRoute: typeof AuthenticatedAppTripsTripIdBalancesRouteImport
+      parentRoute: typeof AuthenticatedAppTripsTripIdRoute
+    }
   }
 }
 
+interface AuthenticatedAppTripsTripIdRouteChildren {
+  AuthenticatedAppTripsTripIdBalancesRoute: typeof AuthenticatedAppTripsTripIdBalancesRoute
+  AuthenticatedAppTripsTripIdExpensesRoute: typeof AuthenticatedAppTripsTripIdExpensesRoute
+  AuthenticatedAppTripsTripIdGamesRoute: typeof AuthenticatedAppTripsTripIdGamesRoute
+  AuthenticatedAppTripsTripIdMemoriesRoute: typeof AuthenticatedAppTripsTripIdMemoriesRoute
+  AuthenticatedAppTripsTripIdWrappedRoute: typeof AuthenticatedAppTripsTripIdWrappedRoute
+  AuthenticatedAppTripsTripIdIndexRoute: typeof AuthenticatedAppTripsTripIdIndexRoute
+}
+
+const AuthenticatedAppTripsTripIdRouteChildren: AuthenticatedAppTripsTripIdRouteChildren =
+  {
+    AuthenticatedAppTripsTripIdBalancesRoute:
+      AuthenticatedAppTripsTripIdBalancesRoute,
+    AuthenticatedAppTripsTripIdExpensesRoute:
+      AuthenticatedAppTripsTripIdExpensesRoute,
+    AuthenticatedAppTripsTripIdGamesRoute:
+      AuthenticatedAppTripsTripIdGamesRoute,
+    AuthenticatedAppTripsTripIdMemoriesRoute:
+      AuthenticatedAppTripsTripIdMemoriesRoute,
+    AuthenticatedAppTripsTripIdWrappedRoute:
+      AuthenticatedAppTripsTripIdWrappedRoute,
+    AuthenticatedAppTripsTripIdIndexRoute:
+      AuthenticatedAppTripsTripIdIndexRoute,
+  }
+
+const AuthenticatedAppTripsTripIdRouteWithChildren =
+  AuthenticatedAppTripsTripIdRoute._addFileChildren(
+    AuthenticatedAppTripsTripIdRouteChildren,
+  )
+
+interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppAdminRoute: typeof AuthenticatedAppAdminRoute
+  AuthenticatedAppProfileRoute: typeof AuthenticatedAppProfileRoute
+  AuthenticatedAppTripsTripIdRoute: typeof AuthenticatedAppTripsTripIdRouteWithChildren
+  AuthenticatedAppTripsJoinRoute: typeof AuthenticatedAppTripsJoinRoute
+  AuthenticatedAppTripsNewRoute: typeof AuthenticatedAppTripsNewRoute
+  AuthenticatedAppTripsIndexRoute: typeof AuthenticatedAppTripsIndexRoute
+}
+
+const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppAdminRoute: AuthenticatedAppAdminRoute,
+  AuthenticatedAppProfileRoute: AuthenticatedAppProfileRoute,
+  AuthenticatedAppTripsTripIdRoute:
+    AuthenticatedAppTripsTripIdRouteWithChildren,
+  AuthenticatedAppTripsJoinRoute: AuthenticatedAppTripsJoinRoute,
+  AuthenticatedAppTripsNewRoute: AuthenticatedAppTripsNewRoute,
+  AuthenticatedAppTripsIndexRoute: AuthenticatedAppTripsIndexRoute,
+}
+
+const AuthenticatedAppRouteWithChildren =
+  AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
