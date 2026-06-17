@@ -13,9 +13,9 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
-import { Route as AuthenticatedAppTripsRouteImport } from './routes/_authenticated/_app/trips'
 import { Route as AuthenticatedAppProfileRouteImport } from './routes/_authenticated/_app/profile'
 import { Route as AuthenticatedAppAdminRouteImport } from './routes/_authenticated/_app/admin'
+import { Route as AuthenticatedAppTripsIndexRouteImport } from './routes/_authenticated/_app/trips/index'
 import { Route as AuthenticatedAppTripsNewRouteImport } from './routes/_authenticated/_app/trips/new'
 import { Route as AuthenticatedAppTripsJoinRouteImport } from './routes/_authenticated/_app/trips/join'
 import { Route as AuthenticatedAppTripsTripIdRouteImport } from './routes/_authenticated/_app/trips/$tripId'
@@ -44,11 +44,6 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/_app',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAppTripsRoute = AuthenticatedAppTripsRouteImport.update({
-  id: '/trips',
-  path: '/trips',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
 const AuthenticatedAppProfileRoute = AuthenticatedAppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -59,23 +54,29 @@ const AuthenticatedAppAdminRoute = AuthenticatedAppAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppTripsIndexRoute =
+  AuthenticatedAppTripsIndexRouteImport.update({
+    id: '/trips/',
+    path: '/trips/',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppTripsNewRoute =
   AuthenticatedAppTripsNewRouteImport.update({
-    id: '/new',
-    path: '/new',
-    getParentRoute: () => AuthenticatedAppTripsRoute,
+    id: '/trips/new',
+    path: '/trips/new',
+    getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppTripsJoinRoute =
   AuthenticatedAppTripsJoinRouteImport.update({
-    id: '/join',
-    path: '/join',
-    getParentRoute: () => AuthenticatedAppTripsRoute,
+    id: '/trips/join',
+    path: '/trips/join',
+    getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppTripsTripIdRoute =
   AuthenticatedAppTripsTripIdRouteImport.update({
-    id: '/$tripId',
-    path: '/$tripId',
-    getParentRoute: () => AuthenticatedAppTripsRoute,
+    id: '/trips/$tripId',
+    path: '/trips/$tripId',
+    getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppTripsTripIdIndexRoute =
   AuthenticatedAppTripsTripIdIndexRouteImport.update({
@@ -119,10 +120,10 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAppAdminRoute
   '/profile': typeof AuthenticatedAppProfileRoute
-  '/trips': typeof AuthenticatedAppTripsRouteWithChildren
   '/trips/$tripId': typeof AuthenticatedAppTripsTripIdRouteWithChildren
   '/trips/join': typeof AuthenticatedAppTripsJoinRoute
   '/trips/new': typeof AuthenticatedAppTripsNewRoute
+  '/trips/': typeof AuthenticatedAppTripsIndexRoute
   '/trips/$tripId/balances': typeof AuthenticatedAppTripsTripIdBalancesRoute
   '/trips/$tripId/expenses': typeof AuthenticatedAppTripsTripIdExpensesRoute
   '/trips/$tripId/games': typeof AuthenticatedAppTripsTripIdGamesRoute
@@ -135,9 +136,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAppAdminRoute
   '/profile': typeof AuthenticatedAppProfileRoute
-  '/trips': typeof AuthenticatedAppTripsRouteWithChildren
   '/trips/join': typeof AuthenticatedAppTripsJoinRoute
   '/trips/new': typeof AuthenticatedAppTripsNewRoute
+  '/trips': typeof AuthenticatedAppTripsIndexRoute
   '/trips/$tripId/balances': typeof AuthenticatedAppTripsTripIdBalancesRoute
   '/trips/$tripId/expenses': typeof AuthenticatedAppTripsTripIdExpensesRoute
   '/trips/$tripId/games': typeof AuthenticatedAppTripsTripIdGamesRoute
@@ -153,10 +154,10 @@ export interface FileRoutesById {
   '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/_app/admin': typeof AuthenticatedAppAdminRoute
   '/_authenticated/_app/profile': typeof AuthenticatedAppProfileRoute
-  '/_authenticated/_app/trips': typeof AuthenticatedAppTripsRouteWithChildren
   '/_authenticated/_app/trips/$tripId': typeof AuthenticatedAppTripsTripIdRouteWithChildren
   '/_authenticated/_app/trips/join': typeof AuthenticatedAppTripsJoinRoute
   '/_authenticated/_app/trips/new': typeof AuthenticatedAppTripsNewRoute
+  '/_authenticated/_app/trips/': typeof AuthenticatedAppTripsIndexRoute
   '/_authenticated/_app/trips/$tripId/balances': typeof AuthenticatedAppTripsTripIdBalancesRoute
   '/_authenticated/_app/trips/$tripId/expenses': typeof AuthenticatedAppTripsTripIdExpensesRoute
   '/_authenticated/_app/trips/$tripId/games': typeof AuthenticatedAppTripsTripIdGamesRoute
@@ -171,10 +172,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin'
     | '/profile'
-    | '/trips'
     | '/trips/$tripId'
     | '/trips/join'
     | '/trips/new'
+    | '/trips/'
     | '/trips/$tripId/balances'
     | '/trips/$tripId/expenses'
     | '/trips/$tripId/games'
@@ -187,9 +188,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin'
     | '/profile'
-    | '/trips'
     | '/trips/join'
     | '/trips/new'
+    | '/trips'
     | '/trips/$tripId/balances'
     | '/trips/$tripId/expenses'
     | '/trips/$tripId/games'
@@ -204,10 +205,10 @@ export interface FileRouteTypes {
     | '/_authenticated/_app'
     | '/_authenticated/_app/admin'
     | '/_authenticated/_app/profile'
-    | '/_authenticated/_app/trips'
     | '/_authenticated/_app/trips/$tripId'
     | '/_authenticated/_app/trips/join'
     | '/_authenticated/_app/trips/new'
+    | '/_authenticated/_app/trips/'
     | '/_authenticated/_app/trips/$tripId/balances'
     | '/_authenticated/_app/trips/$tripId/expenses'
     | '/_authenticated/_app/trips/$tripId/games'
@@ -252,13 +253,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/_app/trips': {
-      id: '/_authenticated/_app/trips'
-      path: '/trips'
-      fullPath: '/trips'
-      preLoaderRoute: typeof AuthenticatedAppTripsRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
     '/_authenticated/_app/profile': {
       id: '/_authenticated/_app/profile'
       path: '/profile'
@@ -273,26 +267,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAdminRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/trips/': {
+      id: '/_authenticated/_app/trips/'
+      path: '/trips'
+      fullPath: '/trips/'
+      preLoaderRoute: typeof AuthenticatedAppTripsIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/trips/new': {
       id: '/_authenticated/_app/trips/new'
-      path: '/new'
+      path: '/trips/new'
       fullPath: '/trips/new'
       preLoaderRoute: typeof AuthenticatedAppTripsNewRouteImport
-      parentRoute: typeof AuthenticatedAppTripsRoute
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/trips/join': {
       id: '/_authenticated/_app/trips/join'
-      path: '/join'
+      path: '/trips/join'
       fullPath: '/trips/join'
       preLoaderRoute: typeof AuthenticatedAppTripsJoinRouteImport
-      parentRoute: typeof AuthenticatedAppTripsRoute
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/trips/$tripId': {
       id: '/_authenticated/_app/trips/$tripId'
-      path: '/$tripId'
+      path: '/trips/$tripId'
       fullPath: '/trips/$tripId'
       preLoaderRoute: typeof AuthenticatedAppTripsTripIdRouteImport
-      parentRoute: typeof AuthenticatedAppTripsRoute
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/trips/$tripId/': {
       id: '/_authenticated/_app/trips/$tripId/'
@@ -369,34 +370,23 @@ const AuthenticatedAppTripsTripIdRouteWithChildren =
     AuthenticatedAppTripsTripIdRouteChildren,
   )
 
-interface AuthenticatedAppTripsRouteChildren {
-  AuthenticatedAppTripsTripIdRoute: typeof AuthenticatedAppTripsTripIdRouteWithChildren
-  AuthenticatedAppTripsJoinRoute: typeof AuthenticatedAppTripsJoinRoute
-  AuthenticatedAppTripsNewRoute: typeof AuthenticatedAppTripsNewRoute
-}
-
-const AuthenticatedAppTripsRouteChildren: AuthenticatedAppTripsRouteChildren = {
-  AuthenticatedAppTripsTripIdRoute:
-    AuthenticatedAppTripsTripIdRouteWithChildren,
-  AuthenticatedAppTripsJoinRoute: AuthenticatedAppTripsJoinRoute,
-  AuthenticatedAppTripsNewRoute: AuthenticatedAppTripsNewRoute,
-}
-
-const AuthenticatedAppTripsRouteWithChildren =
-  AuthenticatedAppTripsRoute._addFileChildren(
-    AuthenticatedAppTripsRouteChildren,
-  )
-
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAdminRoute: typeof AuthenticatedAppAdminRoute
   AuthenticatedAppProfileRoute: typeof AuthenticatedAppProfileRoute
-  AuthenticatedAppTripsRoute: typeof AuthenticatedAppTripsRouteWithChildren
+  AuthenticatedAppTripsTripIdRoute: typeof AuthenticatedAppTripsTripIdRouteWithChildren
+  AuthenticatedAppTripsJoinRoute: typeof AuthenticatedAppTripsJoinRoute
+  AuthenticatedAppTripsNewRoute: typeof AuthenticatedAppTripsNewRoute
+  AuthenticatedAppTripsIndexRoute: typeof AuthenticatedAppTripsIndexRoute
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAdminRoute: AuthenticatedAppAdminRoute,
   AuthenticatedAppProfileRoute: AuthenticatedAppProfileRoute,
-  AuthenticatedAppTripsRoute: AuthenticatedAppTripsRouteWithChildren,
+  AuthenticatedAppTripsTripIdRoute:
+    AuthenticatedAppTripsTripIdRouteWithChildren,
+  AuthenticatedAppTripsJoinRoute: AuthenticatedAppTripsJoinRoute,
+  AuthenticatedAppTripsNewRoute: AuthenticatedAppTripsNewRoute,
+  AuthenticatedAppTripsIndexRoute: AuthenticatedAppTripsIndexRoute,
 }
 
 const AuthenticatedAppRouteWithChildren =

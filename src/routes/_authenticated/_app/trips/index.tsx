@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Users, Calendar, MapPin } from "lucide-react";
 import { formatMoney } from "@/lib/yplit";
 
-export const Route = createFileRoute("/_authenticated/_app/trips")({
+export const Route = createFileRoute("/_authenticated/_app/trips/")({
   head: () => ({ meta: [{ title: "My Trips — Yplit" }] }),
   component: TripsPage,
 });
