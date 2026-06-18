@@ -36,17 +36,19 @@ function NewTrip() {
         cover_url = signed?.signedUrl ?? null;
       }
     }
-    const { data, error } = await supabase.from("trips").insert({
+    const tripId = crypto.randomUUID();
+    const { error } = await supabase.from("trips").insert({
+      id: tripId,
       name, destination: destination || null,
       start_date: start || null, end_date: end || null,
       base_currency: currency, cover_url,
       invite_code: generateInviteCode(),
       created_by: u.user.id,
-    }).select("id").single();
+    });
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Trip created");
-    navigate({ to: "/trips/$tripId", params: { tripId: data.id } });
+    navigate({ to: "/trips/$tripId", params: { tripId } });
   }
 
   return (
