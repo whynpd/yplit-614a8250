@@ -80,6 +80,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "Yplit — Split the bill. Share the story." },
       { name: "twitter:description", content: "Yplit is a travel-first expense splitter with trip memories and games for friend groups." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b8ec07f0-b7fd-48e2-af8c-67608c1d9377/id-preview-f425754d--c04fa680-f2a4-463a-936d-c24f631ab8cc.lovable.app-1781760933695.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b8ec07f0-b7fd-48e2-af8c-67608c1d9377/id-preview-f425754d--c04fa680-f2a4-463a-936d-c24f631ab8cc.lovable.app-1781760933695.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
