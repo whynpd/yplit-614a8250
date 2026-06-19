@@ -114,13 +114,17 @@ export const updateTripSchedule = createServerFn({ method: "POST" })
     const { data: trip } = await supabase.from("trips").select("created_by").eq("id", data.tripId).maybeSingle();
     if (!trip) throw new Error("Trip not found");
     if (trip.created_by !== userId) throw new Error("Only the trip creator can change schedule");
-    const patch: Record<string, string> = {};
+    const patch: {
+      bill_reveal_time?: string; mission_review_time?: string;
+      mission_generate_time?: string; time_zone?: string;
+    } = {};
     if (data.bill_reveal_time) patch.bill_reveal_time = data.bill_reveal_time;
     if (data.mission_review_time) patch.mission_review_time = data.mission_review_time;
     if (data.mission_generate_time) patch.mission_generate_time = data.mission_generate_time;
     if (data.time_zone) patch.time_zone = data.time_zone;
     if (Object.keys(patch).length === 0) return { ok: true };
-    const { error } = await supabase.from("trips").update(patch).eq("id", data.tripId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await supabase.from("trips").update(patch as any).eq("id", data.tripId);
     if (error) throw error;
     return { ok: true };
   });

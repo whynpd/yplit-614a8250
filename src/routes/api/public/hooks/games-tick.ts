@@ -71,7 +71,11 @@ export const Route = createFileRoute("/api/public/hooks/games-tick")({
                   const [mhh, mmin] = String(trip.mission_review_time).split(":").map(Number);
                   const reviewAt = new Date();
                   reviewAt.setHours(mhh ?? 21, mmin ?? 0, 0, 0);
-                  const inserts: Array<Record<string, unknown>> = [];
+                  const inserts = [] as Array<{
+                    trip_id: string; title: string; description: string;
+                    points: number; created_by: string; assigned_to: string;
+                    ai_generated: boolean; due_date: string; review_at: string;
+                  }>;
                   for (const m of parsed.missions ?? []) {
                     const mem = list.find((l) => l.display_name.toLowerCase().trim() === String(m.display_name).toLowerCase().trim());
                     if (!mem) continue;

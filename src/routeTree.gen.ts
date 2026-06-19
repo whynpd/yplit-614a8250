@@ -16,6 +16,7 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_a
 import { Route as AuthenticatedAppProfileRouteImport } from './routes/_authenticated/_app/profile'
 import { Route as AuthenticatedAppAdminRouteImport } from './routes/_authenticated/_app/admin'
 import { Route as AuthenticatedAppTripsIndexRouteImport } from './routes/_authenticated/_app/trips/index'
+import { Route as ApiPublicHooksGamesTickRouteImport } from './routes/api/public/hooks/games-tick'
 import { Route as AuthenticatedAppTripsNewRouteImport } from './routes/_authenticated/_app/trips/new'
 import { Route as AuthenticatedAppTripsJoinRouteImport } from './routes/_authenticated/_app/trips/join'
 import { Route as AuthenticatedAppTripsTripIdRouteImport } from './routes/_authenticated/_app/trips/$tripId'
@@ -60,6 +61,11 @@ const AuthenticatedAppTripsIndexRoute =
     path: '/trips/',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const ApiPublicHooksGamesTickRoute = ApiPublicHooksGamesTickRouteImport.update({
+  id: '/api/public/hooks/games-tick',
+  path: '/api/public/hooks/games-tick',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAppTripsNewRoute =
   AuthenticatedAppTripsNewRouteImport.update({
     id: '/trips/new',
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/trips/$tripId': typeof AuthenticatedAppTripsTripIdRouteWithChildren
   '/trips/join': typeof AuthenticatedAppTripsJoinRoute
   '/trips/new': typeof AuthenticatedAppTripsNewRoute
+  '/api/public/hooks/games-tick': typeof ApiPublicHooksGamesTickRoute
   '/trips/': typeof AuthenticatedAppTripsIndexRoute
   '/trips/$tripId/balances': typeof AuthenticatedAppTripsTripIdBalancesRoute
   '/trips/$tripId/expenses': typeof AuthenticatedAppTripsTripIdExpensesRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedAppProfileRoute
   '/trips/join': typeof AuthenticatedAppTripsJoinRoute
   '/trips/new': typeof AuthenticatedAppTripsNewRoute
+  '/api/public/hooks/games-tick': typeof ApiPublicHooksGamesTickRoute
   '/trips': typeof AuthenticatedAppTripsIndexRoute
   '/trips/$tripId/balances': typeof AuthenticatedAppTripsTripIdBalancesRoute
   '/trips/$tripId/expenses': typeof AuthenticatedAppTripsTripIdExpensesRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/trips/$tripId': typeof AuthenticatedAppTripsTripIdRouteWithChildren
   '/_authenticated/_app/trips/join': typeof AuthenticatedAppTripsJoinRoute
   '/_authenticated/_app/trips/new': typeof AuthenticatedAppTripsNewRoute
+  '/api/public/hooks/games-tick': typeof ApiPublicHooksGamesTickRoute
   '/_authenticated/_app/trips/': typeof AuthenticatedAppTripsIndexRoute
   '/_authenticated/_app/trips/$tripId/balances': typeof AuthenticatedAppTripsTripIdBalancesRoute
   '/_authenticated/_app/trips/$tripId/expenses': typeof AuthenticatedAppTripsTripIdExpensesRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/trips/$tripId'
     | '/trips/join'
     | '/trips/new'
+    | '/api/public/hooks/games-tick'
     | '/trips/'
     | '/trips/$tripId/balances'
     | '/trips/$tripId/expenses'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/trips/join'
     | '/trips/new'
+    | '/api/public/hooks/games-tick'
     | '/trips'
     | '/trips/$tripId/balances'
     | '/trips/$tripId/expenses'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/trips/$tripId'
     | '/_authenticated/_app/trips/join'
     | '/_authenticated/_app/trips/new'
+    | '/api/public/hooks/games-tick'
     | '/_authenticated/_app/trips/'
     | '/_authenticated/_app/trips/$tripId/balances'
     | '/_authenticated/_app/trips/$tripId/expenses'
@@ -221,6 +233,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicHooksGamesTickRoute: typeof ApiPublicHooksGamesTickRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -273,6 +286,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/trips/'
       preLoaderRoute: typeof AuthenticatedAppTripsIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/api/public/hooks/games-tick': {
+      id: '/api/public/hooks/games-tick'
+      path: '/api/public/hooks/games-tick'
+      fullPath: '/api/public/hooks/games-tick'
+      preLoaderRoute: typeof ApiPublicHooksGamesTickRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_app/trips/new': {
       id: '/_authenticated/_app/trips/new'
@@ -407,6 +427,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicHooksGamesTickRoute: ApiPublicHooksGamesTickRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

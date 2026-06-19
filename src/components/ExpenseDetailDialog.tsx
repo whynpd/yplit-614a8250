@@ -63,7 +63,7 @@ export function ExpenseDetailDialog({
   const [payerId, setPayerId] = useState("");
   const [participants, setParticipants] = useState<Set<string>>(new Set());
   const [perPerson, setPerPerson] = useState<Record<string, string>>({});
-  const [splitMethod, setSplitMethod] = useState<"equal" | "exact">("equal");
+  const [splitMethod, setSplitMethod] = useState<"equal" | "unequal">("equal");
   const [saving, setSaving] = useState(false);
   const [commentBody, setCommentBody] = useState("");
 
@@ -73,7 +73,7 @@ export function ExpenseDetailDialog({
     setAmount(String(data.expense.amount));
     setCategory(data.expense.category as ExpenseCategory);
     setPayerId(data.expense.payer_id);
-    setSplitMethod((data.expense.split_method === "exact" ? "exact" : "equal") as "equal" | "exact");
+    setSplitMethod((data.expense.split_method === "unequal" ? "unequal" : "equal") as "equal" | "unequal");
     const ids = new Set(data.splits.map((s) => s.user_id));
     setParticipants(ids);
     const map: Record<string, string> = {};
@@ -199,11 +199,11 @@ export function ExpenseDetailDialog({
                   </Select>
                 </div>
                 <div><Label>Split method</Label>
-                  <Select value={splitMethod} onValueChange={(v) => setSplitMethod(v as "equal" | "exact")}>
+                  <Select value={splitMethod} onValueChange={(v) => setSplitMethod(v as "equal" | "unequal")}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="equal">Equal</SelectItem>
-                      <SelectItem value="exact">Exact amounts</SelectItem>
+                      <SelectItem value="unequal">Exact amounts (unequal)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -223,7 +223,7 @@ export function ExpenseDetailDialog({
                         {checked && splitMethod === "equal" && (
                           <span className="text-xs text-muted-foreground">{formatMoney(equalShare, exp.currency)}</span>
                         )}
-                        {checked && splitMethod === "exact" && (
+                        {checked && splitMethod === "unequal" && (
                           <Input className="w-24" type="number" step="0.01" value={perPerson[m.user_id] ?? ""}
                             onChange={(e) => setPerPerson((p) => ({ ...p, [m.user_id]: e.target.value }))} />
                         )}
