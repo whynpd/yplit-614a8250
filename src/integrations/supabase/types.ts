@@ -44,6 +44,8 @@ export type Database = {
           expense_id: string
           guess: number
           id: string
+          points: number | null
+          scored_at: string | null
           user_id: string
         }
         Insert: {
@@ -51,6 +53,8 @@ export type Database = {
           expense_id: string
           guess: number
           id?: string
+          points?: number | null
+          scored_at?: string | null
           user_id: string
         }
         Update: {
@@ -58,6 +62,8 @@ export type Database = {
           expense_id?: string
           guess?: number
           id?: string
+          points?: number | null
+          scored_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -73,6 +79,77 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expense_comments: {
+        Row: {
+          body: string
+          created_at: string
+          expense_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          expense_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          expense_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_comments_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_comments_user_profile_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expense_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          expense_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          expense_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          expense_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_reactions_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
             referencedColumns: ["id"]
           },
         ]
@@ -121,6 +198,7 @@ export type Database = {
           occurred_at: string
           payer_id: string
           receipt_url: string | null
+          revealed_at: string | null
           split_method: Database["public"]["Enums"]["split_method"]
           trip_id: string
           updated_at: string
@@ -136,6 +214,7 @@ export type Database = {
           occurred_at?: string
           payer_id: string
           receipt_url?: string | null
+          revealed_at?: string | null
           split_method?: Database["public"]["Enums"]["split_method"]
           trip_id: string
           updated_at?: string
@@ -151,6 +230,7 @@ export type Database = {
           occurred_at?: string
           payer_id?: string
           receipt_url?: string | null
+          revealed_at?: string | null
           split_method?: Database["public"]["Enums"]["split_method"]
           trip_id?: string
           updated_at?: string
@@ -319,33 +399,55 @@ export type Database = {
       }
       missions: {
         Row: {
+          ai_generated: boolean
+          assigned_to: string | null
           created_at: string
           created_by: string
           description: string | null
+          due_date: string | null
           id: string
           points: number
+          review_at: string | null
+          reviewed_at: string | null
           title: string
           trip_id: string
         }
         Insert: {
+          ai_generated?: boolean
+          assigned_to?: string | null
           created_at?: string
           created_by: string
           description?: string | null
+          due_date?: string | null
           id?: string
           points?: number
+          review_at?: string | null
+          reviewed_at?: string | null
           title: string
           trip_id: string
         }
         Update: {
+          ai_generated?: boolean
+          assigned_to?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
+          due_date?: string | null
           id?: string
           points?: number
+          review_at?: string | null
+          reviewed_at?: string | null
           title?: string
           trip_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "missions_assigned_profile_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "missions_creator_profile_fkey"
             columns: ["created_by"]
@@ -534,6 +636,7 @@ export type Database = {
       trips: {
         Row: {
           base_currency: string
+          bill_reveal_time: string
           cover_url: string | null
           created_at: string
           created_by: string
@@ -541,12 +644,16 @@ export type Database = {
           end_date: string | null
           id: string
           invite_code: string
+          mission_generate_time: string
+          mission_review_time: string
           name: string
           start_date: string | null
+          time_zone: string
           updated_at: string
         }
         Insert: {
           base_currency?: string
+          bill_reveal_time?: string
           cover_url?: string | null
           created_at?: string
           created_by: string
@@ -554,12 +661,16 @@ export type Database = {
           end_date?: string | null
           id?: string
           invite_code: string
+          mission_generate_time?: string
+          mission_review_time?: string
           name: string
           start_date?: string | null
+          time_zone?: string
           updated_at?: string
         }
         Update: {
           base_currency?: string
+          bill_reveal_time?: string
           cover_url?: string | null
           created_at?: string
           created_by?: string
@@ -567,8 +678,11 @@ export type Database = {
           end_date?: string | null
           id?: string
           invite_code?: string
+          mission_generate_time?: string
+          mission_review_time?: string
           name?: string
           start_date?: string | null
+          time_zone?: string
           updated_at?: string
         }
         Relationships: []
@@ -616,6 +730,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_trip_creator: {
+        Args: { _trip_id: string; _user_id: string }
         Returns: boolean
       }
       is_trip_member: {
