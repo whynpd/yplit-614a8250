@@ -10,9 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { CATEGORY_META, formatMoney, type ExpenseCategory } from "@/lib/yplit";
 import { cn } from "@/lib/utils";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, MessageCircle, Smile } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { ExpenseDetailDialog } from "@/components/ExpenseDetailDialog";
 
 export const Route = createFileRoute("/_authenticated/_app/trips/$tripId/expenses")({
   component: ExpensesPage,
@@ -21,24 +22,36 @@ export const Route = createFileRoute("/_authenticated/_app/trips/$tripId/expense
 function ExpensesPage() {
   const { tripId } = useParams({ from: "/_authenticated/_app/trips/$tripId/expenses" });
   const qc = useQueryClient();
+  const [openExpense, setOpenExpense] = useState<string | null>(null);
 
   const { data } = useQuery({
     queryKey: ["expenses", tripId],
     queryFn: async () => {
-      const [exps, members] = await Promise.all([
+      const [exps, members, reactions, commentCounts] = await Promise.all([
         supabase.from("expenses").select("*, splits:expense_splits(*), payer:profiles!expenses_payer_profile_fkey(*)").eq("trip_id", tripId).order("occurred_at", { ascending: false }),
         supabase.from("trip_members").select("user_id, profile:profiles!trip_members_profile_fkey(*)").eq("trip_id", tripId),
+        supabase.from("expense_reactions").select("expense_id, emoji, user_id"),
+        supabase.from("expense_comments").select("expense_id"),
       ]);
-      return { expenses: exps.data ?? [], members: members.data ?? [] };
+      // Filter reactions/comments to this trip's expenses
+      const ids = new Set((exps.data ?? []).map((e) => e.id));
+      return {
+        expenses: exps.data ?? [],
+        members: members.data ?? [],
+        reactions: (reactions.data ?? []).filter((r) => ids.has(r.expense_id)),
+        commentCounts: (commentCounts.data ?? []).filter((c) => ids.has(c.expense_id)),
+      };
     },
   });
 
-  async function del(id: string) {
+  async function del(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
     if (!confirm("Delete this expense?")) return;
     const { error } = await supabase.from("expenses").delete().eq("id", id);
     if (error) return toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["expenses", tripId] });
     qc.invalidateQueries({ queryKey: ["trip-overview", tripId] });
+    qc.invalidateQueries({ queryKey: ["balances", tripId] });
   }
 
   return (
@@ -56,8 +69,19 @@ function ExpensesPage() {
         {(data?.expenses ?? []).length === 0 && <p className="text-sm text-muted-foreground">No expenses yet — tap "Add expense".</p>}
         {(data?.expenses ?? []).map((e) => {
           const meta = CATEGORY_META[e.category as ExpenseCategory];
+          const rx = (data?.reactions ?? []).filter((r) => r.expense_id === e.id);
+          const commentCount = (data?.commentCounts ?? []).filter((c) => c.expense_id === e.id).length;
+          // Aggregate top emojis
+          const counts: Record<string, number> = {};
+          for (const r of rx) counts[r.emoji] = (counts[r.emoji] ?? 0) + 1;
+          const topEmojis = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3);
           return (
-            <div key={e.id} className={cn("filmstrip flex items-center justify-between gap-3 p-4", meta.cls)}>
+            <button
+              type="button"
+              key={e.id}
+              onClick={() => setOpenExpense(e.id)}
+              className={cn("filmstrip flex w-full items-center justify-between gap-3 p-4 text-left transition hover:brightness-110", meta.cls)}
+            >
               <div className="flex min-w-0 items-center gap-3">
                 <div className="text-2xl">{meta.emoji}</div>
                 <div className="min-w-0">
@@ -65,6 +89,21 @@ function ExpensesPage() {
                   <div className="text-xs text-muted-foreground">
                     {e.payer?.display_name ?? "?"} paid · {meta.label} · {new Date(e.occurred_at).toLocaleDateString()}
                   </div>
+                  {(topEmojis.length > 0 || commentCount > 0) && (
+                    <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
+                      {topEmojis.length > 0 && (
+                        <span className="inline-flex items-center gap-1">
+                          {topEmojis.map(([emo, n]) => <span key={emo}>{emo} {n}</span>)}
+                        </span>
+                      )}
+                      {commentCount > 0 && (
+                        <span className="inline-flex items-center gap-1"><MessageCircle className="size-3" />{commentCount}</span>
+                      )}
+                      {topEmojis.length === 0 && commentCount === 0 && (
+                        <span className="inline-flex items-center gap-1 opacity-50"><Smile className="size-3" />react</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -72,12 +111,22 @@ function ExpensesPage() {
                   <div className="font-semibold">{formatMoney(Number(e.amount), e.currency)}</div>
                   <div className="text-[10px] text-muted-foreground">{e.split_method}</div>
                 </div>
-                <Button size="icon" variant="ghost" onClick={() => del(e.id)}><Trash2 className="size-4" /></Button>
+                <span onClick={(ev) => del(e.id, ev)} className="inline-flex size-9 cursor-pointer items-center justify-center rounded-md hover:bg-secondary">
+                  <Trash2 className="size-4" />
+                </span>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
+
+      <ExpenseDetailDialog
+        expenseId={openExpense}
+        open={!!openExpense}
+        onOpenChange={(o) => { if (!o) setOpenExpense(null); }}
+        members={data?.members ?? []}
+        tripId={tripId}
+      />
     </div>
   );
 }
