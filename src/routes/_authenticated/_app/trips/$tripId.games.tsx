@@ -165,13 +165,12 @@ function Leaderboards({ trip }: { trip: TripCfg | null | undefined }) {
   const { data } = useQuery({
     queryKey: ["leaderboards", tripId, sinceISO],
     queryFn: async () => {
-      const [{ data: guesses }, { data: comps }, { data: missions }, { data: steps }] = await Promise.all([
+      const [{ data: guesses }, { data: comps }, { data: steps }] = await Promise.all([
         supabase.from("bill_guesses").select("user_id, points, scored_at, expense:expenses!inner(trip_id)").eq("expense.trip_id", tripId),
-        supabase.from("mission_completions").select("user_id, created_at, mission:missions!inner(trip_id, points)").eq("mission.trip_id", tripId),
-        supabase.from("missions").select("id, points, trip_id").eq("trip_id", tripId),
+        supabase.from("mission_completions").select("user_id, completed_at, mission:missions!inner(trip_id, points)").eq("mission.trip_id", tripId),
         supabase.from("step_entries").select("user_id, steps, day").eq("trip_id", tripId),
       ]);
-      return { guesses: guesses ?? [], comps: comps ?? [], missions: missions ?? [], steps: steps ?? [] };
+      return { guesses: guesses ?? [], comps: comps ?? [], steps: steps ?? [] };
     },
   });
 
