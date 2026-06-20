@@ -300,6 +300,47 @@ export type Database = {
           },
         ]
       }
+      member_photos: {
+        Row: {
+          created_at: string
+          day_date: string
+          id: string
+          photographer_id: string
+          revealed_at: string | null
+          storage_path: string
+          subject_id: string
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_date: string
+          id?: string
+          photographer_id: string
+          revealed_at?: string | null
+          storage_path: string
+          subject_id: string
+          trip_id: string
+        }
+        Update: {
+          created_at?: string
+          day_date?: string
+          id?: string
+          photographer_id?: string
+          revealed_at?: string | null
+          storage_path?: string
+          subject_id?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_photos_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memories: {
         Row: {
           caption: string | null
@@ -494,6 +535,59 @@ export type Database = {
         }
         Relationships: []
       }
+      settlement_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          amount: number | null
+          created_at: string
+          currency: string | null
+          from_user: string | null
+          id: string
+          note: string | null
+          payload: Json | null
+          settlement_id: string | null
+          to_user: string | null
+          trip_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          from_user?: string | null
+          id?: string
+          note?: string | null
+          payload?: Json | null
+          settlement_id?: string | null
+          to_user?: string | null
+          trip_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          from_user?: string | null
+          id?: string
+          note?: string | null
+          payload?: Json | null
+          settlement_id?: string | null
+          to_user?: string | null
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "settlement_audit_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settlements: {
         Row: {
           amount: number
@@ -594,6 +688,50 @@ export type Database = {
           },
         ]
       }
+      trip_itinerary: {
+        Row: {
+          created_at: string
+          created_by: string
+          day_date: string
+          id: string
+          notes: string | null
+          time: string | null
+          title: string
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          day_date: string
+          id?: string
+          notes?: string | null
+          time?: string | null
+          title: string
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          day_date?: string
+          id?: string
+          notes?: string | null
+          time?: string | null
+          title?: string
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_itinerary_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_members: {
         Row: {
           id: string
@@ -644,9 +782,14 @@ export type Database = {
           end_date: string | null
           id: string
           invite_code: string
+          leaderboard_refresh_time: string
           mission_generate_time: string
           mission_review_time: string
           name: string
+          photo_reveal_time: string
+          photo_target_count: number
+          photo_window_end: string
+          photo_window_start: string
           start_date: string | null
           time_zone: string
           updated_at: string
@@ -661,9 +804,14 @@ export type Database = {
           end_date?: string | null
           id?: string
           invite_code: string
+          leaderboard_refresh_time?: string
           mission_generate_time?: string
           mission_review_time?: string
           name: string
+          photo_reveal_time?: string
+          photo_target_count?: number
+          photo_window_end?: string
+          photo_window_start?: string
           start_date?: string | null
           time_zone?: string
           updated_at?: string
@@ -678,9 +826,14 @@ export type Database = {
           end_date?: string | null
           id?: string
           invite_code?: string
+          leaderboard_refresh_time?: string
           mission_generate_time?: string
           mission_review_time?: string
           name?: string
+          photo_reveal_time?: string
+          photo_target_count?: number
+          photo_window_end?: string
+          photo_window_start?: string
           start_date?: string | null
           time_zone?: string
           updated_at?: string
