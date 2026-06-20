@@ -184,7 +184,7 @@ function Leaderboards({ trip }: { trip: TripCfg | null | undefined }) {
   for (const g of data?.guesses ?? []) bump(g.user_id, Number(g.points) || 0, g.scored_at);
   for (const c of data?.comps ?? []) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    bump(c.user_id, Number((c.mission as any)?.points) || 0, c.created_at);
+    bump(c.user_id, Number((c.mission as any)?.points) || 0, c.completed_at);
   }
 
   const board = Array.from(totals.entries()).sort((a, b) => b[1].all - a[1].all);
