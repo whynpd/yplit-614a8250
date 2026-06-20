@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Receipt, Users, Camera, Gamepad2, Sparkles, ArrowLeft, MapPin, Calendar } from "lucide-react";
+import { Receipt, Users, Camera, Gamepad2, Sparkles, ArrowLeft, MapPin, Calendar, ListTodo } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/_app/trips/$tripId")({
