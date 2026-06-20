@@ -23,6 +23,7 @@ import { Route as AuthenticatedAppTripsTripIdRouteImport } from './routes/_authe
 import { Route as AuthenticatedAppTripsTripIdIndexRouteImport } from './routes/_authenticated/_app/trips/$tripId.index'
 import { Route as AuthenticatedAppTripsTripIdWrappedRouteImport } from './routes/_authenticated/_app/trips/$tripId.wrapped'
 import { Route as AuthenticatedAppTripsTripIdMemoriesRouteImport } from './routes/_authenticated/_app/trips/$tripId.memories'
+import { Route as AuthenticatedAppTripsTripIdItineraryRouteImport } from './routes/_authenticated/_app/trips/$tripId.itinerary'
 import { Route as AuthenticatedAppTripsTripIdGamesRouteImport } from './routes/_authenticated/_app/trips/$tripId.games'
 import { Route as AuthenticatedAppTripsTripIdExpensesRouteImport } from './routes/_authenticated/_app/trips/$tripId.expenses'
 import { Route as AuthenticatedAppTripsTripIdBalancesRouteImport } from './routes/_authenticated/_app/trips/$tripId.balances'
@@ -102,6 +103,12 @@ const AuthenticatedAppTripsTripIdMemoriesRoute =
     path: '/memories',
     getParentRoute: () => AuthenticatedAppTripsTripIdRoute,
   } as any)
+const AuthenticatedAppTripsTripIdItineraryRoute =
+  AuthenticatedAppTripsTripIdItineraryRouteImport.update({
+    id: '/itinerary',
+    path: '/itinerary',
+    getParentRoute: () => AuthenticatedAppTripsTripIdRoute,
+  } as any)
 const AuthenticatedAppTripsTripIdGamesRoute =
   AuthenticatedAppTripsTripIdGamesRouteImport.update({
     id: '/games',
@@ -134,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/trips/$tripId/balances': typeof AuthenticatedAppTripsTripIdBalancesRoute
   '/trips/$tripId/expenses': typeof AuthenticatedAppTripsTripIdExpensesRoute
   '/trips/$tripId/games': typeof AuthenticatedAppTripsTripIdGamesRoute
+  '/trips/$tripId/itinerary': typeof AuthenticatedAppTripsTripIdItineraryRoute
   '/trips/$tripId/memories': typeof AuthenticatedAppTripsTripIdMemoriesRoute
   '/trips/$tripId/wrapped': typeof AuthenticatedAppTripsTripIdWrappedRoute
   '/trips/$tripId/': typeof AuthenticatedAppTripsTripIdIndexRoute
@@ -150,6 +158,7 @@ export interface FileRoutesByTo {
   '/trips/$tripId/balances': typeof AuthenticatedAppTripsTripIdBalancesRoute
   '/trips/$tripId/expenses': typeof AuthenticatedAppTripsTripIdExpensesRoute
   '/trips/$tripId/games': typeof AuthenticatedAppTripsTripIdGamesRoute
+  '/trips/$tripId/itinerary': typeof AuthenticatedAppTripsTripIdItineraryRoute
   '/trips/$tripId/memories': typeof AuthenticatedAppTripsTripIdMemoriesRoute
   '/trips/$tripId/wrapped': typeof AuthenticatedAppTripsTripIdWrappedRoute
   '/trips/$tripId': typeof AuthenticatedAppTripsTripIdIndexRoute
@@ -170,6 +179,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/trips/$tripId/balances': typeof AuthenticatedAppTripsTripIdBalancesRoute
   '/_authenticated/_app/trips/$tripId/expenses': typeof AuthenticatedAppTripsTripIdExpensesRoute
   '/_authenticated/_app/trips/$tripId/games': typeof AuthenticatedAppTripsTripIdGamesRoute
+  '/_authenticated/_app/trips/$tripId/itinerary': typeof AuthenticatedAppTripsTripIdItineraryRoute
   '/_authenticated/_app/trips/$tripId/memories': typeof AuthenticatedAppTripsTripIdMemoriesRoute
   '/_authenticated/_app/trips/$tripId/wrapped': typeof AuthenticatedAppTripsTripIdWrappedRoute
   '/_authenticated/_app/trips/$tripId/': typeof AuthenticatedAppTripsTripIdIndexRoute
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/trips/$tripId/balances'
     | '/trips/$tripId/expenses'
     | '/trips/$tripId/games'
+    | '/trips/$tripId/itinerary'
     | '/trips/$tripId/memories'
     | '/trips/$tripId/wrapped'
     | '/trips/$tripId/'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/trips/$tripId/balances'
     | '/trips/$tripId/expenses'
     | '/trips/$tripId/games'
+    | '/trips/$tripId/itinerary'
     | '/trips/$tripId/memories'
     | '/trips/$tripId/wrapped'
     | '/trips/$tripId'
@@ -224,6 +236,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/trips/$tripId/balances'
     | '/_authenticated/_app/trips/$tripId/expenses'
     | '/_authenticated/_app/trips/$tripId/games'
+    | '/_authenticated/_app/trips/$tripId/itinerary'
     | '/_authenticated/_app/trips/$tripId/memories'
     | '/_authenticated/_app/trips/$tripId/wrapped'
     | '/_authenticated/_app/trips/$tripId/'
@@ -336,6 +349,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppTripsTripIdMemoriesRouteImport
       parentRoute: typeof AuthenticatedAppTripsTripIdRoute
     }
+    '/_authenticated/_app/trips/$tripId/itinerary': {
+      id: '/_authenticated/_app/trips/$tripId/itinerary'
+      path: '/itinerary'
+      fullPath: '/trips/$tripId/itinerary'
+      preLoaderRoute: typeof AuthenticatedAppTripsTripIdItineraryRouteImport
+      parentRoute: typeof AuthenticatedAppTripsTripIdRoute
+    }
     '/_authenticated/_app/trips/$tripId/games': {
       id: '/_authenticated/_app/trips/$tripId/games'
       path: '/games'
@@ -364,6 +384,7 @@ interface AuthenticatedAppTripsTripIdRouteChildren {
   AuthenticatedAppTripsTripIdBalancesRoute: typeof AuthenticatedAppTripsTripIdBalancesRoute
   AuthenticatedAppTripsTripIdExpensesRoute: typeof AuthenticatedAppTripsTripIdExpensesRoute
   AuthenticatedAppTripsTripIdGamesRoute: typeof AuthenticatedAppTripsTripIdGamesRoute
+  AuthenticatedAppTripsTripIdItineraryRoute: typeof AuthenticatedAppTripsTripIdItineraryRoute
   AuthenticatedAppTripsTripIdMemoriesRoute: typeof AuthenticatedAppTripsTripIdMemoriesRoute
   AuthenticatedAppTripsTripIdWrappedRoute: typeof AuthenticatedAppTripsTripIdWrappedRoute
   AuthenticatedAppTripsTripIdIndexRoute: typeof AuthenticatedAppTripsTripIdIndexRoute
@@ -377,6 +398,8 @@ const AuthenticatedAppTripsTripIdRouteChildren: AuthenticatedAppTripsTripIdRoute
       AuthenticatedAppTripsTripIdExpensesRoute,
     AuthenticatedAppTripsTripIdGamesRoute:
       AuthenticatedAppTripsTripIdGamesRoute,
+    AuthenticatedAppTripsTripIdItineraryRoute:
+      AuthenticatedAppTripsTripIdItineraryRoute,
     AuthenticatedAppTripsTripIdMemoriesRoute:
       AuthenticatedAppTripsTripIdMemoriesRoute,
     AuthenticatedAppTripsTripIdWrappedRoute:
@@ -432,13 +455,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { aiJson } from "./ai-gateway.server";
+import { geminiJson } from "./ai-gateway.server";
 
 type GeneratedMission = { display_name: string; title: string; description: string; points: number };
 
@@ -20,18 +20,11 @@ export const generateMissionsForToday = createServerFn({ method: "POST" })
 
     const today = new Date().toISOString().slice(0, 10);
 
-    // Skip if already generated today (unless force)
     if (!data.force) {
       const { data: existing } = await supabase
         .from("missions")
-        .select("id")
-        .eq("trip_id", data.tripId)
-        .eq("ai_generated", true)
-        .eq("due_date", today)
-        .limit(1);
-      if ((existing ?? []).length > 0) {
-        return { ok: true, created: 0, message: "Already generated for today" };
-      }
+        .select("id").eq("trip_id", data.tripId).eq("ai_generated", true).eq("due_date", today).limit(1);
+      if ((existing ?? []).length > 0) return { ok: true, created: 0, message: "Already generated for today" };
     }
 
     const { data: members } = await supabase
@@ -46,29 +39,43 @@ export const generateMissionsForToday = createServerFn({ method: "POST" })
       display_name: (m.profile as any)?.display_name ?? "Traveler",
     }));
 
-    const prompt = `You are a witty trip activity designer. Generate one UNIQUE mini-mission for each traveler on a group trip.
-Trip name: "${trip.name}"
+    // Pull today's itinerary so missions tie in to actual plans.
+    const { data: itin } = await supabase
+      .from("trip_itinerary")
+      .select("time, title, notes")
+      .eq("trip_id", data.tripId)
+      .eq("day_date", today)
+      .order("time", { ascending: true });
+    const itineraryText = (itin ?? []).length
+      ? (itin ?? [])
+          .map((i) => `- ${i.time ? i.time.slice(0, 5) : "anytime"}: ${i.title}${i.notes ? ` (${i.notes})` : ""}`)
+          .join("\n")
+      : "(no itinerary planned for today — base missions on the destination)";
+
+    const prompt = `You design playful daily challenges for travelers on a group trip.
+
+Trip: "${trip.name}"
 Destination: ${trip.destination ?? "unknown"}
 Date: ${today}
+Today's itinerary:
+${itineraryText}
+
 Travelers: ${memberList.map((m) => m.display_name).join(", ")}
 
-Rules:
-- Each mission must be DIFFERENT, fun, achievable in a single day, safe, and tailored to the destination if known.
-- 6-14 words for title. Short playful description (max 20 words).
-- Points: integer 10-50 based on difficulty (easy=10-20, medium=21-35, ambitious=36-50).
-- Return STRICT JSON object: { "missions": [{ "display_name": "...", "title": "...", "description": "...", "points": 25 }, ...] }
-- The "display_name" in each mission MUST exactly match one traveler's name. One mission per traveler, in any order.`;
+Design ONE unique mission per traveler. Rules:
+- Tie missions LOOSELY to the itinerary or destination — general & open-ended, NOT hyper-specific (e.g. "snap a candid of someone laughing during lunch" — good. "Order exactly the prawn curry at Anjuna Beach Cafe at 1:42pm" — bad).
+- Missions must be achievable for an average traveler. No risky, illegal, or rude challenges.
+- Vary difficulty AND vary points: mix easy (10-20 pts), medium (25-40), and ambitious (50-80). At least one of each tier across the group.
+- 6-14 words for title. Short playful description (≤25 words).
+- Each "display_name" MUST exactly match one traveler's name. One mission per traveler, all different.
 
-    let parsed: { missions: GeneratedMission[] };
-    try {
-      parsed = await aiJson<{ missions: GeneratedMission[] }>({
-        system: "You output valid JSON only. No prose, no markdown fences.",
-        user: prompt,
-        temperature: 0.95,
-      });
-    } catch (e) {
-      throw new Error(`AI generation failed: ${(e as Error).message}`);
-    }
+Return STRICT JSON: { "missions": [{ "display_name": "...", "title": "...", "description": "...", "points": 25 }, ...] }`;
+
+    const parsed = await geminiJson<{ missions: GeneratedMission[] }>({
+      system: "You output valid JSON only. No prose, no markdown fences.",
+      user: prompt,
+      temperature: 0.95,
+    });
 
     const reviewAt = new Date();
     const [hh, mm] = String(trip.mission_review_time).split(":").map(Number);
@@ -99,7 +106,7 @@ Rules:
     return { ok: true, created: inserts.length };
   });
 
-/** Update trip scheduling/timezone (creator only). */
+/** Update trip scheduling (creator only). */
 export const updateTripSchedule = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: {
@@ -108,23 +115,27 @@ export const updateTripSchedule = createServerFn({ method: "POST" })
     mission_review_time?: string;
     mission_generate_time?: string;
     time_zone?: string;
+    leaderboard_refresh_time?: string;
+    photo_target_count?: number;
+    photo_window_start?: string;
+    photo_window_end?: string;
+    photo_reveal_time?: string;
   }) => d)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: trip } = await supabase.from("trips").select("created_by").eq("id", data.tripId).maybeSingle();
     if (!trip) throw new Error("Trip not found");
     if (trip.created_by !== userId) throw new Error("Only the trip creator can change schedule");
-    const patch: {
-      bill_reveal_time?: string; mission_review_time?: string;
-      mission_generate_time?: string; time_zone?: string;
-    } = {};
-    if (data.bill_reveal_time) patch.bill_reveal_time = data.bill_reveal_time;
-    if (data.mission_review_time) patch.mission_review_time = data.mission_review_time;
-    if (data.mission_generate_time) patch.mission_generate_time = data.mission_generate_time;
-    if (data.time_zone) patch.time_zone = data.time_zone;
-    if (Object.keys(patch).length === 0) return { ok: true };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await supabase.from("trips").update(patch as any).eq("id", data.tripId);
+    const patch: any = {};
+    for (const k of [
+      "bill_reveal_time","mission_review_time","mission_generate_time","time_zone",
+      "leaderboard_refresh_time","photo_target_count","photo_window_start","photo_window_end","photo_reveal_time",
+    ] as const) {
+      if (data[k] !== undefined) patch[k] = data[k];
+    }
+    if (Object.keys(patch).length === 0) return { ok: true };
+    const { error } = await supabase.from("trips").update(patch).eq("id", data.tripId);
     if (error) throw error;
     return { ok: true };
   });

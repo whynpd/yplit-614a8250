@@ -110,6 +110,53 @@ function BalancesPage() {
             ))}
         </div>
       </section>
+
+      <section className="md:col-span-2">
+        <SettlementAuditLog tripId={tripId} profileById={profileById} currency={data?.currency ?? "INR"} />
+      </section>
+    </div>
+  );
+}
+
+function SettlementAuditLog({ tripId, profileById, currency }: { tripId: string; profileById: Map<string, { display_name: string } | null>; currency: string }) {
+  const { data } = useQuery({
+    queryKey: ["settlement-audit", tripId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("settlement_audit")
+        .select("*")
+        .eq("trip_id", tripId)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      return data ?? [];
+    },
+  });
+  if (!data || data.length === 0) return null;
+  const nameOf = (id: string | null) => (id && profileById.get(id)?.display_name) || "?";
+  return (
+    <div>
+      <h2 className="font-display text-lg font-semibold">Settlement history</h2>
+      <p className="mt-1 text-xs text-muted-foreground">Every settlement is logged for transparency.</p>
+      <ul className="mt-3 space-y-2">
+        {data.map((row) => (
+          <li key={row.id} className="rounded-xl border border-border bg-card p-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span>
+                <span className={
+                  row.action === "created" ? "text-success font-semibold" :
+                  row.action === "deleted" ? "text-destructive font-semibold" :
+                  "text-muted-foreground font-semibold"
+                }>{row.action}</span>
+                {" · "}
+                <span>{nameOf(row.from_user)} → {nameOf(row.to_user)}</span>
+                {row.amount != null && <span className="ml-2 font-semibold">{formatMoney(Number(row.amount), row.currency ?? currency)}</span>}
+              </span>
+              <span className="text-xs text-muted-foreground">{new Date(row.created_at).toLocaleString()}</span>
+            </div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground">by {nameOf(row.actor_id)}</div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

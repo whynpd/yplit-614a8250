@@ -14,11 +14,22 @@ function TripsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["my-trips"],
     queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return [];
+      // CRITICAL: filter by current user — RLS lets you see every member of trips you belong to,
+      // so without this filter each trip appears once per member (duplicates after invites).
       const { data: memberships } = await supabase
         .from("trip_members")
         .select("trip:trips(*)")
+        .eq("user_id", u.user.id)
         .order("joined_at", { ascending: false });
-      return (memberships ?? []).map((m) => m.trip).filter(Boolean) as NonNullable<typeof memberships>[number]["trip"][];
+      // Dedupe defensively by trip id.
+      const seen = new Set<string>();
+      const trips: NonNullable<NonNullable<typeof memberships>[number]["trip"]>[] = [];
+      for (const m of memberships ?? []) {
+        if (m.trip && !seen.has(m.trip.id)) { seen.add(m.trip.id); trips.push(m.trip); }
+      }
+      return trips;
     },
   });
 

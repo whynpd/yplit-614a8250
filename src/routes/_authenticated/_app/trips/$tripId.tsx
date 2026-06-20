@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Receipt, Users, Camera, Gamepad2, Sparkles, ArrowLeft, MapPin, Calendar } from "lucide-react";
+import { Receipt, Users, Camera, Gamepad2, Sparkles, ArrowLeft, MapPin, Calendar, ListTodo } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/_app/trips/$tripId")({
@@ -20,6 +20,7 @@ function TripLayout() {
 
   const tabs = [
     { to: "/trips/$tripId" as const, label: "Overview", icon: Receipt, exact: true },
+    { to: "/trips/$tripId/itinerary" as const, label: "Itinerary", icon: ListTodo },
     { to: "/trips/$tripId/expenses" as const, label: "Expenses", icon: Receipt },
     { to: "/trips/$tripId/balances" as const, label: "Balances", icon: Users },
     { to: "/trips/$tripId/memories" as const, label: "Memories", icon: Camera },
