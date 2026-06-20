@@ -1,5 +1,6 @@
-// Lightweight Lovable AI Gateway helper (OpenAI-compatible).
-// Server-only: never import from browser code.
+// AI helpers — server only.
+// Uses GEMINI_API_KEY (direct Google API) for mission generation per user request;
+// falls back to Lovable AI Gateway for other helpers.
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -11,27 +12,20 @@ export async function aiChat(opts: {
 }): Promise<string> {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("LOVABLE_API_KEY missing");
-  const model = opts.model ?? "google/gemini-3-flash-preview";
   const body: Record<string, unknown> = {
-    model,
+    model: opts.model ?? "google/gemini-3-flash-preview",
     messages: opts.messages,
     temperature: opts.temperature ?? 0.8,
   };
   if (opts.json) body.response_format = { type: "json_object" };
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Lovable-API-Key": key,
-    },
+    headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`AI gateway ${res.status}: ${t.slice(0, 300)}`);
-  }
-  const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  return json.choices?.[0]?.message?.content ?? "";
+  if (!res.ok) throw new Error(`AI gateway ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  const j = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  return j.choices?.[0]?.message?.content ?? "";
 }
 
 export async function aiJson<T = unknown>(opts: {
@@ -44,27 +38,46 @@ export async function aiJson<T = unknown>(opts: {
   if (opts.system) messages.push({ role: "system", content: opts.system });
   messages.push({ role: "user", content: opts.user });
   const text = await aiChat({ model: opts.model, messages, json: true, temperature: opts.temperature });
-  // Strip ``` fences if model wrapped output
   const cleaned = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
   return JSON.parse(cleaned) as T;
 }
 
-/**
- * Smart points allocation for the "Guess the Bill" game.
- * 0–100 scale based on relative error vs the actual amount.
- *   - <=1%  diff → 100
- *   - <=5%  diff → 90–99
- *   - <=10% diff → 75–89
- *   - <=25% diff → 40–74
- *   - <=50% diff → 10–39
- *   - >50%  diff → 0–9
- */
+/** Call Google Gemini directly (per-user request for missions). */
+export async function geminiJson<T = unknown>(opts: {
+  system?: string;
+  user: string;
+  model?: string;
+  temperature?: number;
+}): Promise<T> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY missing");
+  const model = opts.model ?? "gemini-2.0-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  const fullPrompt = opts.system ? `${opts.system}\n\n${opts.user}` : opts.user;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: fullPrompt }] }],
+      generationConfig: {
+        temperature: opts.temperature ?? 0.95,
+        responseMimeType: "application/json",
+      },
+    }),
+  });
+  if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  const j = (await res.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  };
+  const text = j.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  const cleaned = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+  return JSON.parse(cleaned) as T;
+}
+
+/** Score a bill guess: 0–100 pts using exponential decay on relative error. */
 export function scoreGuess(actual: number, guess: number): number {
-  if (actual <= 0) return 0;
+  if (!actual || actual <= 0) return 0;
   const diff = Math.abs(guess - actual) / actual;
-  if (diff <= 0.01) return 100;
-  if (diff >= 1) return 0;
-  // Smooth exponential decay
-  const raw = 100 * Math.exp(-3.2 * diff);
-  return Math.max(0, Math.min(100, Math.round(raw)));
+  const pts = 100 * Math.exp(-3.2 * diff);
+  return Math.round(Math.max(0, Math.min(100, pts)));
 }
