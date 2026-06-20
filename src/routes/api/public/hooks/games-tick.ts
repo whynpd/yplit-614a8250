@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { scoreGuess, aiJson } from "@/lib/ai-gateway.server";
+import { scoreGuess, geminiJson } from "@/lib/ai-gateway.server";
 
-// Cron tick (every ~10 min): auto-reveal expenses past reveal time, generate daily missions.
+// Cron tick: reveals expenses past reveal time, generates daily missions, reveals photos.
 export const Route = createFileRoute("/api/public/hooks/games-tick")({
   server: {
     handlers: {
@@ -9,27 +9,21 @@ export const Route = createFileRoute("/api/public/hooks/games-tick")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const log: string[] = [];
 
-        // 1. Fetch all trips
         const { data: trips } = await supabaseAdmin
           .from("trips")
-          .select("id, name, destination, created_by, bill_reveal_time, mission_review_time, mission_generate_time, time_zone");
+          .select("id, name, destination, created_by, bill_reveal_time, mission_review_time, mission_generate_time, photo_reveal_time");
 
         const now = new Date();
         const todayStr = now.toISOString().slice(0, 10);
 
         for (const trip of trips ?? []) {
-          // --- AUTO REVEAL EXPENSES ---
+          // AUTO REVEAL EXPENSES
           const [rhh, rmm] = String(trip.bill_reveal_time).split(":").map(Number);
-          const todayRevealCutoff = new Date();
-          todayRevealCutoff.setHours(rhh ?? 21, rmm ?? 0, 0, 0);
-
-          if (now >= todayRevealCutoff) {
+          const revealCut = new Date(); revealCut.setHours(rhh ?? 21, rmm ?? 0, 0, 0);
+          if (now >= revealCut) {
             const { data: pending } = await supabaseAdmin
-              .from("expenses")
-              .select("id, amount")
-              .eq("trip_id", trip.id)
-              .is("revealed_at", null)
-              .lte("occurred_at", todayRevealCutoff.toISOString());
+              .from("expenses").select("id, amount")
+              .eq("trip_id", trip.id).is("revealed_at", null).lte("occurred_at", revealCut.toISOString());
             for (const exp of pending ?? []) {
               await supabaseAdmin.from("expenses").update({ revealed_at: now.toISOString() }).eq("id", exp.id);
               const { data: guesses } = await supabaseAdmin
@@ -40,17 +34,25 @@ export const Route = createFileRoute("/api/public/hooks/games-tick")({
                   scored_at: now.toISOString(),
                 }).eq("id", g.id);
               }
-              log.push(`reveal ${exp.id} (${guesses?.length ?? 0} guesses)`);
+              log.push(`reveal ${exp.id} (${guesses?.length ?? 0})`);
             }
           }
 
-          // --- AUTO GENERATE MISSIONS at mission_generate_time today ---
+          // AUTO REVEAL PHOTOS
+          const [phh, pmm] = String(trip.photo_reveal_time ?? "22:30").split(":").map(Number);
+          const photoCut = new Date(); photoCut.setHours(phh ?? 22, pmm ?? 30, 0, 0);
+          if (now >= photoCut) {
+            await supabaseAdmin.from("member_photos")
+              .update({ revealed_at: now.toISOString() })
+              .eq("trip_id", trip.id).eq("day_date", todayStr).is("revealed_at", null);
+          }
+
+          // AUTO GENERATE MISSIONS at mission_generate_time
           const [ghh, gmm] = String(trip.mission_generate_time).split(":").map(Number);
-          const genCutoff = new Date();
-          genCutoff.setHours(ghh ?? 9, gmm ?? 0, 0, 0);
-          if (now >= genCutoff) {
-            const { data: existing } = await supabaseAdmin
-              .from("missions").select("id").eq("trip_id", trip.id).eq("ai_generated", true).eq("due_date", todayStr).limit(1);
+          const genCut = new Date(); genCut.setHours(ghh ?? 9, gmm ?? 0, 0, 0);
+          if (now >= genCut) {
+            const { data: existing } = await supabaseAdmin.from("missions")
+              .select("id").eq("trip_id", trip.id).eq("ai_generated", true).eq("due_date", todayStr).limit(1);
             if ((existing ?? []).length === 0) {
               const { data: members } = await supabaseAdmin
                 .from("trip_members")
@@ -63,19 +65,29 @@ export const Route = createFileRoute("/api/public/hooks/games-tick")({
               }));
               if (list.length > 0) {
                 try {
-                  const prompt = `Generate one UNIQUE fun mini-mission per traveler. Trip "${trip.name}", destination ${trip.destination ?? "unknown"}, date ${todayStr}. Travelers: ${list.map((l) => l.display_name).join(", ")}. Each unique, safe, single-day. Return JSON: {"missions":[{"display_name":"","title":"","description":"","points":20}]}. points 10-50.`;
-                  const parsed = await aiJson<{ missions: Array<{ display_name: string; title: string; description: string; points: number }> }>({
-                    system: "You output valid JSON only.",
+                  const { data: itin } = await supabaseAdmin
+                    .from("trip_itinerary").select("time, title, notes")
+                    .eq("trip_id", trip.id).eq("day_date", todayStr).order("time", { ascending: true });
+                  const itineraryText = (itin ?? []).length
+                    ? (itin ?? []).map((i) => `- ${i.time ? i.time.slice(0,5) : "anytime"}: ${i.title}${i.notes ? ` (${i.notes})` : ""}`).join("\n")
+                    : "(no plan today)";
+                  const prompt = `Design one fun, OPEN-ENDED mission per traveler — loosely tied to today's itinerary or destination, never hyper-specific. Vary difficulty: easy (10-20 pts), medium (25-40), ambitious (50-80). Each unique, safe.
+Trip "${trip.name}", destination ${trip.destination ?? "unknown"}, date ${todayStr}.
+Itinerary:
+${itineraryText}
+Travelers: ${list.map((l) => l.display_name).join(", ")}.
+Return JSON: {"missions":[{"display_name":"","title":"","description":"","points":25}]}.`;
+                  const parsed = await geminiJson<{ missions: Array<{ display_name: string; title: string; description: string; points: number }> }>({
+                    system: "Valid JSON only.",
                     user: prompt,
                   });
                   const [mhh, mmin] = String(trip.mission_review_time).split(":").map(Number);
-                  const reviewAt = new Date();
-                  reviewAt.setHours(mhh ?? 21, mmin ?? 0, 0, 0);
-                  const inserts = [] as Array<{
-                    trip_id: string; title: string; description: string;
-                    points: number; created_by: string; assigned_to: string;
-                    ai_generated: boolean; due_date: string; review_at: string;
-                  }>;
+                  const reviewAt = new Date(); reviewAt.setHours(mhh ?? 21, mmin ?? 0, 0, 0);
+                  const inserts: Array<{
+                    trip_id: string; title: string; description: string; points: number;
+                    created_by: string; assigned_to: string; ai_generated: boolean;
+                    due_date: string; review_at: string;
+                  }> = [];
                   for (const m of parsed.missions ?? []) {
                     const mem = list.find((l) => l.display_name.toLowerCase().trim() === String(m.display_name).toLowerCase().trim());
                     if (!mem) continue;
