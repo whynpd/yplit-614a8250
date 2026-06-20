@@ -20,6 +20,7 @@ function TripLayout() {
 
   const tabs = [
     { to: "/trips/$tripId" as const, label: "Overview", icon: Receipt, exact: true },
+    { to: "/trips/$tripId/itinerary" as const, label: "Itinerary", icon: ListTodo },
     { to: "/trips/$tripId/expenses" as const, label: "Expenses", icon: Receipt },
     { to: "/trips/$tripId/balances" as const, label: "Balances", icon: Users },
     { to: "/trips/$tripId/memories" as const, label: "Memories", icon: Camera },
