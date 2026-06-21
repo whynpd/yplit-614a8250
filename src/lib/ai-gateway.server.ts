@@ -13,7 +13,7 @@ export async function aiChat(opts: {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("LOVABLE_API_KEY missing");
   const body: Record<string, unknown> = {
-    model: opts.model ?? "google/gemini-3-flash-preview",
+    model: opts.model ?? "google/gemini-3.1-flash-lite",
     messages: opts.messages,
     temperature: opts.temperature ?? 0.8,
   };
