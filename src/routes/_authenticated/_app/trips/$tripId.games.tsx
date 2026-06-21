@@ -322,14 +322,29 @@ function GuessGame() {
             ) : !e.revealed ? (
               <GuessInput onSubmit={(v) => guess(e.id, v)} />
             ) : null}
-            {e.revealed && e.guesses.length > 0 && (
+            {e.revealed && (
               <ul className="mt-2 space-y-0.5 text-xs">
-                {e.guesses.slice().sort((a, b) => Math.abs(a.guess - (e.amount ?? 0)) - Math.abs(b.guess - (e.amount ?? 0))).map((g, i) => (
-                  <li key={g.id} className="flex items-center justify-between">
-                    <span>{i === 0 && "🏆 "}{nameOf(g.user_id)} — {formatMoney(g.guess, e.currency)}</span>
-                    {g.points != null && <span className="font-semibold tabular-nums">+{g.points}</span>}
-                  </li>
-                ))}
+                {(() => {
+                  const guessed = e.guesses.slice().sort((a, b) => Math.abs(a.guess - (e.amount ?? 0)) - Math.abs(b.guess - (e.amount ?? 0)));
+                  const guessedIds = new Set(guessed.map((g) => g.user_id));
+                  const skipped = (members ?? []).filter((m) => !guessedIds.has(m.user_id));
+                  return (
+                    <>
+                      {guessed.map((g, i) => (
+                        <li key={g.id} className="flex items-center justify-between">
+                          <span>{i === 0 && "🏆 "}{nameOf(g.user_id)} — {formatMoney(g.guess, e.currency)}</span>
+                          <span className="font-semibold tabular-nums text-foreground">+{g.points ?? 0} pts</span>
+                        </li>
+                      ))}
+                      {skipped.map((m) => (
+                        <li key={m.user_id} className="flex items-center justify-between text-muted-foreground">
+                          <span>{nameOf(m.user_id)} — no guess</span>
+                          <span className="font-semibold tabular-nums">+0 pts</span>
+                        </li>
+                      ))}
+                    </>
+                  );
+                })()}
               </ul>
             )}
           </div>
