@@ -42,36 +42,23 @@ export async function aiJson<T = unknown>(opts: {
   return JSON.parse(cleaned) as T;
 }
 
-/** Call Google Gemini directly (per-user request for missions). */
+/**
+ * JSON helper for missions/games. Previously used the direct Google Gemini API,
+ * but that key hits free-tier 429 quota errors. Route through the Lovable AI
+ * Gateway instead — same Gemini family, managed quota, no user-supplied key.
+ */
 export async function geminiJson<T = unknown>(opts: {
   system?: string;
   user: string;
   model?: string;
   temperature?: number;
 }): Promise<T> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY missing");
-  const model = opts.model ?? "gemini-2.0-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-  const fullPrompt = opts.system ? `${opts.system}\n\n${opts.user}` : opts.user;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: fullPrompt }] }],
-      generationConfig: {
-        temperature: opts.temperature ?? 0.95,
-        responseMimeType: "application/json",
-      },
-    }),
+  return aiJson<T>({
+    model: opts.model ?? "google/gemini-3.1-flash-lite",
+    system: opts.system,
+    user: opts.user,
+    temperature: opts.temperature ?? 0.95,
   });
-  if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  const j = (await res.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
-  const text = j.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-  const cleaned = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
-  return JSON.parse(cleaned) as T;
 }
 
 /** Score a bill guess: 0–100 pts using exponential decay on relative error. */
