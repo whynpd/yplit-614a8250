@@ -43,22 +43,77 @@ export async function aiJson<T = unknown>(opts: {
 }
 
 /**
- * JSON helper for missions/games. Previously used the direct Google Gemini API,
- * but that key hits free-tier 429 quota errors. Route through the Lovable AI
- * Gateway instead — same Gemini family, managed quota, no user-supplied key.
+ * Call Google Gemini directly with a fallback chain. The free-tier quota is
+ * per-model, so if one model hits 429 we try the next. Order: lightest/cheapest
+ * (highest quota) first, escalating to stronger models.
  */
+const GEMINI_FALLBACK_MODELS = [
+  "gemini-2.5-flash-lite",
+  "gemini-2.0-flash-lite",
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-flash-latest",
+  "gemini-2.5-pro",
+] as const;
+
 export async function geminiJson<T = unknown>(opts: {
   system?: string;
   user: string;
   model?: string;
   temperature?: number;
 }): Promise<T> {
-  return aiJson<T>({
-    model: opts.model ?? "google/gemini-3.1-flash-lite",
-    system: opts.system,
-    user: opts.user,
-    temperature: opts.temperature ?? 0.95,
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY missing");
+  const models = opts.model ? [opts.model, ...GEMINI_FALLBACK_MODELS] : [...GEMINI_FALLBACK_MODELS];
+  const fullPrompt = opts.system ? `${opts.system}\n\n${opts.user}` : opts.user;
+  const body = JSON.stringify({
+    contents: [{ parts: [{ text: fullPrompt }] }],
+    generationConfig: {
+      temperature: opts.temperature ?? 0.95,
+      responseMimeType: "application/json",
+    },
   });
+
+  const errors: string[] = [];
+  for (const model of models) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+    } catch (e) {
+      errors.push(`${model}: network ${(e as Error).message}`);
+      continue;
+    }
+    if (res.status === 429 || res.status === 503 || res.status === 404) {
+      errors.push(`${model}: ${res.status}`);
+      continue;
+    }
+    if (!res.ok) {
+      const txt = (await res.text()).slice(0, 300);
+      // Retryable on rate/quota wording even with other status codes
+      if (/quota|rate/i.test(txt)) {
+        errors.push(`${model}: ${res.status} ${txt.slice(0, 80)}`);
+        continue;
+      }
+      throw new Error(`Gemini ${model} ${res.status}: ${txt}`);
+    }
+    const j = (await res.json()) as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    };
+    const text = j.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    const cleaned = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+    try {
+      return JSON.parse(cleaned) as T;
+    } catch {
+      errors.push(`${model}: invalid JSON`);
+      continue;
+    }
+  }
+  throw new Error(`All Gemini models failed: ${errors.join(" | ")}`);
 }
 
 /** Score a bill guess: 0–100 pts using exponential decay on relative error. */
